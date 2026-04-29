@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What is Automatic Reference Counting (ARC) and what are its limitations?",
+    "answer": "ARC is Swift's compile-time memory management mechanism where the compiler automatically inserts retain and release calls to track object lifetimes for reference types (classes, closures, actors). When an object's strong reference count reaches zero, it is deallocated deterministically and its deinit runs. ARC only operates on reference types, not value types like structs and enums. Its main limitation is that it cannot automatically detect strong reference cycles—if two objects strongly reference each other, neither will be deallocated. Developers must break cycles manually using weak or unowned references. Unlike tracing garbage collectors, ARC has deterministic destruction and no GC pauses, but the trade-off is that the developer is responsible for cycle prevention."
+  },
+  {
+    "question": "Explain the differences between strong, weak, and unowned references.",
+    "answer": "A strong reference (the default) increments the retain count and keeps the referenced object alive. A weak reference does not increment the retain count, must be declared as an Optional var, and is automatically set to nil when the referenced object is deallocated—this is implemented via a side table that tracks weak references. An unowned reference also does not increment the retain count but is non-optional; it assumes the referenced object will outlive the reference. Accessing an unowned reference after deallocation traps in unowned(safe) mode (the default) or causes undefined behavior with unowned(unsafe). Use weak for delegates, parent references, and any reference whose lifetime may be shorter than the holder. Use unowned only when you can guarantee the referenced object will always outlive the reference, such as in closures owned by the same object they capture."
+  }
+]
