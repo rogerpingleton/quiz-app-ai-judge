@@ -9,6 +9,7 @@ the OpenAI Chat Completions API to critique and score each answer 1–10.
 Configuration is read from a .env file in the current directory:
     OPENAI_API_KEY=sk-...
     OPENAI_MODEL=gpt-4o-mini   # optional, defaults to gpt-4o-mini ("GPT Mini")
+    QUIZ_TOPIC=AI Engineering  # optional, skips the interactive topic prompt
 """
 
 import argparse
@@ -109,16 +110,24 @@ def letter_grade(avg):
 # ---------- main -------------------------------------------------------------
 
 def main():
+    load_dotenv()  # populate env from .env before reading defaults below
+
     parser = argparse.ArgumentParser(
         description="Quiz the user on a topic with AI-graded answers."
     )
     parser.add_argument("questions_file", help="Path to JSON file with question/answer pairs.")
+    parser.add_argument(
+        "--topic",
+        default=os.getenv("QUIZ_TOPIC"),
+        help="Topic for the AI judge. If omitted, you'll be prompted interactively. "
+             "Can also be set via the QUIZ_TOPIC environment variable.",
+    )
     args = parser.parse_args()
 
-    load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        print("Error: OPENAI_API_KEY is not set. Add it to a .env file.", file=sys.stderr)
+        print("Error: OPENAI_API_KEY is not set. Add it to a .env file or pass it as an "
+              "environment variable.", file=sys.stderr)
         sys.exit(1)
 
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -137,14 +146,19 @@ def main():
     print("=" * 64)
     print(" AI Quiz")
     print("=" * 64)
-    topic = input("What topic are these questions about? ").strip() or "general knowledge"
+
+    if args.topic:
+        topic = args.topic.strip()
+        print(f"Topic: {topic}  (preset)")
+    else:
+        topic = input("What topic are these questions about? ").strip() or "general knowledge"
+
     num_questions = ask_int(
         f"How many questions would you like (1–{len(questions)})? ",
         1, len(questions),
     )
 
     print(f"\nUsing model: {model}")
-    print(f"Topic: {topic}")
     print(f"Questions this session: {num_questions}")
     print("Type 'pass' as your answer to skip a question and draw a different one.")
     print("=" * 64)
